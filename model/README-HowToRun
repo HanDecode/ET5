@@ -1,0 +1,56 @@
+# 1. YNAT data download
+-------------------------------------------------------------------------------
+# DATA_DIR: 데이터가 위치될 디렉토리
+$ cd DATA_DIR
+DATA_DIR$ wget https://aistages-prod-server-public.s3.amazonaws.com/app/Competitions/000066/data/ynat-v1.1.tar.gz
+DATA_DIR$ tar xvzf ynat-v1.1.tar.gz
+-------------------------------------------------------------------------------
+
+# 2. Create links ("train.json" and "val.json" are required)
+-------------------------------------------------------------------------------
+DATA_DIR$ cd ynat-v1.1
+DATA_DIR/ynat-v1.1$ ln -s ynat-v1.1_train.json train.json
+DATA_DIR/ynat-v1.1$ ln -s ynat-v1.1_dev.json val.json 
+-------------------------------------------------------------------------------
+
+# 3. 가상환경 설치 (권장)
+-------------------------------------------------------------------------------
+$ conda create -n aiopen_tranformers_4.3.2 python=3.7.10
+$ conda activate aiopen_tranformers_4.3.2
+-------------------------------------------------------------------------------
+
+# 4. framework 설치 
+# 4.1. torch 관련 
+-------------------------------------------------------------------------------
+(aiopen_tranformers_4.3.2) $ pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+-------------------------------------------------------------------------------
+
+# 4.2. transformers(4.3.2) 관련
+-------------------------------------------------------------------------------
+(aiopen_tranformers_4.3.2) $ pip install transformers==4.3.2 
+-------------------------------------------------------------------------------
+
+# 4.3 YNAT finetune 관련 
+-------------------------------------------------------------------------------
+# BASE_DIR: “finetune-t5-ynat-code.tar.gz” 가 위치될 디렉토리 
+(aiopen_tranformers_4.3.2) $ cd BASE_DIR 
+(aiopen_tranformers_4.3.2) BASE_DIR $ tar xvzf finetune-t5-ynat-code.tar.gz
+(aiopen_tranformers_4.3.2) BASE_DIR $ cd finetune-t5-ynat-code
+(aiopen_tranformers_4.3.2) BASE_DIR/finetune-t5-ynat-code$ pip install -r requirements.txt
+-------------------------------------------------------------------------------
+
+# 5. YNAT finetune 실행 
+-------------------------------------------------------------------------------
+(aiopen_tranformers_4.3.2) BASE_DIR/finetune-t5-ynat-code$ CUDA_VISIBLE_DEVICES=0 python seq2seq_finetune_t5_ynat.py \
+--do_train --do_eval --predict_with_generate \
+--model_name_or_path PRETRAINED_MODEL_DIR \
+--data_dir DATA_DIR/ynat-v1.1 \
+--output_dir OUTPUT_DIR \
+--overwrite_output_dir \
+--save_steps 100000 \
+--per_device_train_batch_size 16 \
+--gradient_accumulation_steps 1 \
+--num_train_epochs 1.0
+-------------------------------------------------------------------------------
+# 기준 성능 F1_macro: 0.8602546236321337
+
