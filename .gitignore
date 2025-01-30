@@ -1,0 +1,7 @@
+# API Key
+.env
+
+# Cache
+__pycache__
+
+pytorch_model.bin
